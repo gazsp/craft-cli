@@ -1,7 +1,6 @@
 {
     "name": "craft-cli/cli",
     "description": "Command line interface for Craft CMS",
-    "type": "craft-plugin",
     "authors": [
         {
             "name": "Rob Sanchez",
