@@ -55,25 +55,59 @@ class DbPullCommand extends Command
                 'ssh-host',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'SSH host.',
+                'SSH host of remote connection.',
             ),
             array(
                 'ssh-user',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'SSH user.',
+                'SSH user of remote connection.',
             ),
             array(
                 'ssh-port',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'SSH port.',
+                'SSH port of remote connection.',
             ),
             array(
                 'ssh-identity-file',
                 null,
                 InputOption::VALUE_REQUIRED,
                 'SSH identity file.',
+            ),
+            array(
+                'remote-host',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Set a host for the remote MySQL connection, if different from what is found in config/db.php.',
+            ),
+            array(
+                'remote-database', // name
+                null, // shortcut
+                InputOption::VALUE_OPTIONAL, // mode
+                'Remote MySQL database name.', // description
+                null, // default value
+            ),
+            array(
+                'remote-port', // name
+                null, // shortcut
+                InputOption::VALUE_OPTIONAL, // mode
+                'Remote MySQL port.', // description
+                3306, // default value
+            ),
+            array(
+                'remote-user', // name
+                null, // shortcut
+                InputOption::VALUE_REQUIRED, // mode
+                'Remote MySQL username.', // description
+                null, // default value
+            ),
+            array(
+                'remote-password', // name
+                null, // shortcut
+                InputOption::VALUE_REQUIRED, // mode
+                'Remote MySQL password.', // description
+                null, // default value
             ),
             array(
                 'force',
@@ -135,6 +169,26 @@ class DbPullCommand extends Command
             $this->remoteCredentials = array_merge($this->remoteCredentials, $dbConfig[$remoteEnvironment]);
         }
 
+        if ($this->option('remote-host')) {
+            $this->remoteCredentials['server'] = $this->option('remote-host');
+        }
+
+        if ($this->option('remote-database')) {
+            $this->remoteCredentials['database'] = $this->option('remote-database');
+        }
+
+        if ($this->option('remote-user')) {
+            $this->remoteCredentials['user'] = $this->option('remote-user');
+        }
+
+        if ($this->option('remote-password')) {
+            $this->remoteCredentials['password'] = $this->option('remote-password');
+        }
+
+        if ($this->option('remote-port')) {
+            $this->remoteCredentials['port'] = $this->option('remote-port');
+        }
+
         $this->debug = $this->option('debug');
 
         if (! $this->debug && ! $this->option('force') && ! $this->confirm('This will overwrite your local database. Are you sure you want to continue?')) {
@@ -191,9 +245,7 @@ class DbPullCommand extends Command
         try {
             $this->validate();
         } catch (Exception $e) {
-            $this->error($e->getMessage());
-
-            return;
+            return $this->fail($e->getMessage());
         }
 
         $mysqlCommand = (string) $this->makeMysqlCommand(MysqlCommand::class, $this->localCredentials);

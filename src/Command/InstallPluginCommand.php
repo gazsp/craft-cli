@@ -50,9 +50,10 @@ class InstallPluginCommand extends Command
                 'Name of Github repository. (ex. pixelandtonic/Events)',
             ),
             array(
-                'branch',
+                'version',
                 InputArgument::OPTIONAL,
-                'Which branch? (Default: master)',
+                'Specify a git branch, tag, or commit hash',
+                'master',
             ),
         );
     }
@@ -68,9 +69,9 @@ class InstallPluginCommand extends Command
             throw new Exception('Repository must be formatted: username/repo.');
         }
 
-        $branch = $this->argument('branch') ?: 'master';
+        $version = $this->argument('version');
 
-        $url = sprintf('https://github.com/%s/archive/%s.tar.gz', $repo, $branch);
+        $url = sprintf('https://github.com/%s/archive/%s.tar.gz', $repo, $version);
 
         $this->comment('Downloading...');
 
@@ -81,9 +82,7 @@ class InstallPluginCommand extends Command
         try {
             $filePath = $downloader->download();
         } catch (Exception $e) {
-            $this->error($e->getMessage());
-
-            return;
+            return $this->fail($e->getMessage());
         }
 
         $this->comment('Extracting...');
@@ -91,9 +90,7 @@ class InstallPluginCommand extends Command
         $extractionPath = rtrim(sys_get_temp_dir(), '/').'/craft_plugin_'.uniqid();
 
         if (! @mkdir($extractionPath)) {
-            $this->error('Could not create directory in system temp directory.');
-
-            return;
+            return $this->fail('Could not create directory in system temp directory.');
         }
 
         $tarExtractor = new TarExtractor($filePath, $extractionPath);
@@ -106,9 +103,7 @@ class InstallPluginCommand extends Command
         try {
             $pluginFile = $pluginReader->read();
         } catch (Exception $e) {
-            $this->error($e->getMessage());
-
-            return;
+            return $this->fail($e->getMessage());
         }
 
         $folderName = strtolower($pluginFile->getBasename('Plugin.php'));

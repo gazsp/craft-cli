@@ -35,10 +35,22 @@ abstract class AbstractMysqlCommand
     public $password;
 
     /**
+     * Additional CLI flags
+     * @var string[]
+     */
+    public $flags = [];
+
+    /**
+     * Pipe output and grep for this string
+     * @var string
+     */
+    public $grep;
+
+    /**
      * Constructor
      * @param string $db Mysql database name
      */
-    public function __construct($db)
+    public function __construct($db = '')
     {
         $this->db = $db;
     }
@@ -61,7 +73,7 @@ abstract class AbstractMysqlCommand
         $arguments = [];
 
         if ($this->password) {
-            $arguments[] = 'MYSQL_PWD='.escapeshellarg($this->password);
+            $arguments[] = 'MYSQL_PWD='.escapeshellarg($this->getPassword());
         }
 
         $arguments[] = $this->getBaseCommand();
@@ -75,10 +87,34 @@ abstract class AbstractMysqlCommand
         }
 
         if ($this->user) {
-            $arguments[] = '-u '.escapeshellarg($this->user);
+            $arguments[] = '-u '.escapeshellarg($this->getUser());
+        }
+
+        if ($this->flags) {
+            foreach ($this->flags as $flag) {
+                $arguments[] = $flag;
+            }
         }
 
         return $arguments;
+    }
+
+    /**
+     * Get Mysql user
+     * @var string
+     */
+    protected function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Get Mysql password
+     * @var string
+     */
+    protected function getPassword()
+    {
+        return $this->password;
     }
 
     /**
@@ -89,7 +125,13 @@ abstract class AbstractMysqlCommand
     {
         $arguments = $this->getArguments();
 
-        array_push($arguments, $this->db);
+        if ($this->db) {
+            array_push($arguments, $this->db);
+        }
+
+        if ($this->grep) {
+            array_push($arguments, '| grep '.escapeshellarg($this->grep));
+        }
 
         // space prefix to prevent bash history
         return ' '.implode(' ', $arguments);

@@ -31,23 +31,47 @@ craft --environment="mysite.dev" show:config
 CRAFT_ENVIRONMENT="mysite.dev" craft show:config
 ```
 
+Craft CLI is [dotenv](https://github.com/vlucas/phpdotenv) aware, and will automagically load environment variables from a `.env` file in your project root (path can be customised via `.craft-cli.php`). You may set your Craft environment by setting a `CRAFT_ENVIRONMENT` variable in your `.env` file.
+
 ## Commands
 
+- [`assets:pull`](#assets-pull)
+- [`assets:push`](#assets-push)
 - [`clear:cache`](#clear-cache)
 - [`console`](#console)
 - [`db:backup`](#db-backup)
+- [`db:create`](#db-create)
 - [`db:pull`](#db-pull)
 - [`db:push`](#db-push)
+- [`db:restore`](#db-restore)
+- [`download`](#download-craft)
 - [`generate:command`](#generate-command)
 - [`help`](#help)
 - [`init`](#init)
-- [`install`](#install)
+- [`install`](#install-craft)
 - [`install:plugin`](#install-plugin)
 - [`list`](#list)
-- [`rebuild:searchindexes`](#rebuild-searchindexes)
+- [`rebuild:searchindexes`](#rebuild-search-indexes)
 - [`run:tasks`](#run-tasks)
 - [`show:config`](#show-config)
 - [`tail`](#tail)
+- [`update:assetsindexes`](#update-asset-indexes)
+
+### Assets Pull
+
+Pull Asset files from a remote environment.
+
+```
+craft assets:pull --ssh-host=your.remote.server.com --ssh-user=yourUserName yourRemoteEnvironmentName
+```
+
+### Assets Push
+
+Push Asset files to a remote environment
+
+```
+craft assets:push --ssh-host=your.remote.server.com --ssh-user=yourUserName yourRemoteEnvironmentName
+```
 
 ### Clear Cache
 
@@ -73,10 +97,24 @@ craft console
 
 ### DB Backup
 
-Backup your database to `craft/storage`.
+Backup your database to `craft/storage/backups`.
 
 ```
 craft db:backup
+```
+
+Backup your database to the specified path.
+
+```
+craft db:backup ./backup.sql
+```
+
+### DB Create
+
+Create a database
+
+```
+craft db:create --host=localhost --port=3306 --name=yourDbName --user=yourUserName --password=yourPassword
 ```
 
 ### DB Pull
@@ -93,6 +131,34 @@ Push your local database to a remote database.
 
 ```
 craft db:push --ssh-host=your.remote.server.com --ssh-user=yourUserName --force yourRemoteEnvironmentName
+```
+
+### DB Restore
+
+Restore the database from the most recent backup from `craft/storage/backups`.
+
+```
+craft db:restore --force
+```
+
+Restore the database from the specified `.sql` file.
+
+```
+craft db:restore --force ./backup.sql
+```
+
+### Download Craft
+
+Download Craft to the current directory.
+
+```
+craft download
+```
+
+Create the specified directory and download Craft into it.
+
+```
+craft download path/to/directory
 ```
 
 ### Generate Command
@@ -135,7 +201,7 @@ This config file is only necessary if you if you are using [Custom Commands](#cu
 
 ### Install Craft
 
-Install Craft to the current directory.
+Download and install Craft to the current directory.
 
 ```
 craft install
@@ -209,6 +275,12 @@ Show a tail of craft.log
 
 ```
 craft tail
+```
+
+### Update Asset Indexes
+
+```
+craft update:assetsindexes
 ```
 
 ## Custom Commands
